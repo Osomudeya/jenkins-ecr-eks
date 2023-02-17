@@ -21,7 +21,7 @@ pipeline {
 
     stage('Push to ECR') {
       steps {
-        withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_ACCESS_KEY_ID'),
+        withEnv([string(credentialsId: 'aws-credentials', variable: 'AWS_ACCESS_KEY_ID'),
                           string(credentialsId: 'aws-credentials', variable: 'AWS_SECRET_ACCESS_KEY')]) {
           sh "aws ecr-public get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
           sh "docker tag ${DOCKERHUB_REGISTRY}/docker-helloworld:latest ${ECR_REGISTRY}/docker-helloworld:latest"
