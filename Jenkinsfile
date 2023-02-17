@@ -14,7 +14,7 @@ pipeline {
           "AWS_DEFAULT_REGION=${env.AWS_DEFAULT_REGION}"
         ]) {
           sh '''
-            echo "your-password" | docker login -u AWS --password-stdin public.ecr.aws/j7c0z4k6
+            echo "uXxlqBHFa4sXduwqyjprf5BhgCkcl7vODyesiW57" | docker login -u AWS --password-stdin public.ecr.aws/j7c0z4k6
             docker build -t docker-helloworld .
             docker tag docker-helloworld:latest public.ecr.aws/j7c0z4k6/docker-helloworld:"${BUILD_ID}"
             docker push public.ecr.aws/j7c0z4k6/docker-helloworld:latest:"${BUILD_ID}"
