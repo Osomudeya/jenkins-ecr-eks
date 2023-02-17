@@ -3,10 +3,10 @@ pipeline {
 
   environment {
     DOCKERHUB_REGISTRY = "osomudeya"
-    DOCKERHUB_USERNAME = credentials("dockerhub-credentials").username
-    DOCKERHUB_PASSWORD = credentials("dockerhub-credentials").password
-    AWS_ACCESS_KEY_ID = credentials("aws-credentials").accessKeyId
-    AWS_SECRET_ACCESS_KEY = credentials("aws-credentials").secretAccessKey
+    DOCKERHUB_USERNAME = 'credentials("dockerhub-credentials").username'
+    DOCKERHUB_PASSWORD = 'credentials("dockerhub-credentials").password'
+    AWS_ACCESS_KEY_ID = 'credentials("aws-credentials").accessKeyId'
+    AWS_SECRET_ACCESS_KEY = 'credentials("aws-credentials").secretAccessKey'
     AWS_DEFAULT_REGION = "us-east-1"
     ECR_REGISTRY = "public.ecr.aws/j7c0z4k6"
   }
