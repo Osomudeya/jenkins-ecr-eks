@@ -4,7 +4,7 @@ pipeline {
     AWS_ACCOUNT_ID="public.ecr.aws/j7c0z4k6"
     AWS_DEFAULT_REGION="us-east-1"
     IMAGE_REPO_NAME="docker-helloworld"
-    IMAGE_TAG="v1"
+    IMAGE_TAG="latest"
     REPOSITORY_URI = "public.ecr.aws/j7c0z4k6/docker-helloworld:${IMAGE_TAG}"
   }
 
@@ -12,14 +12,14 @@ pipeline {
     stage('Logging into AWS ECR') {
       steps {
         script {
-          sh """aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"""
+          sh """aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/j7c0z4k6"""
         }
       }
     }
 
     stage('Cloning Git') {
       steps {
-        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'YOUR_CREDENTIALS_ID_HERE', url: 'https://github.com/Osomudeya/jenkins-ecr-eks.git']]])
+        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Osomudeya/jenkins-ecr-eks.git']]])
       }
     }
 
