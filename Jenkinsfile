@@ -1,43 +1,31 @@
 pipeline {
   agent any
+
   environment {
-    AWS_ACCOUNT_ID="141938542403"
-    AWS_DEFAULT_REGION="us-east-1"
-    IMAGE_REPO_NAME="docker-helloworld"
-    IMAGE_TAG="latest"
-    REPOSITORY_URI = "public.ecr.aws/j7c0z4k6/docker-helloworld:${IMAGE_TAG}"
+    DOCKERHUB_REGISTRY = "osomudeya"
+    DOCKERHUB_USERNAME = credentials('dockerhub-credentials').username
+    DOCKERHUB_PASSWORD = credentials('dockerhub-credentials').password
+    AWS_ACCESS_KEY_ID = credentials('aws-credentials').accessKeyId
+    AWS_SECRET_ACCESS_KEY = credentials('aws-credentials').secretAccessKey
+    AWS_DEFAULT_REGION = "us-east-1"
+    ECR_REGISTRY = "public.ecr.aws/j7c0z4k6"
   }
 
   stages {
-    stage('Logging into AWS ECR') {
+    stage('Pull Docker image') {
       steps {
-        script {
-          sh """aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/j7c0z4k6"""
-        }
+        sh "sudo docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD} ${DOCKERHUB_REGISTRY}"
+        sh "sudo docker pull ${DOCKERHUB_REGISTRY}/docker-helloworld:latest"
       }
     }
 
-    stage('Cloning Git') {
+    stage('Push to ECR') {
       steps {
-        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/Osomudeya/jenkins-ecr-eks.git']]])
-      }
-    }
-
-    // Building Docker images
-    stage('Building image') {
-      steps{
-        script {
-          dockerImage = docker.build "${IMAGE_REPO_NAME}:${IMAGE_TAG}"
-        }
-      }
-    }
-
-    // Uploading Docker images into AWS ECR
-    stage('Pushing to ECR') {
-      steps{
-        script {
-          sh """docker tag ${IMAGE_REPO_NAME}:${IMAGE_TAG} ${REPOSITORY_URI}"""
-          sh """docker push ${REPOSITORY_URI}"""
+        withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_ACCESS_KEY_ID'),
+                          string(credentialsId: 'aws-credentials', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+          sh "aws ecr-public get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+          sh "docker tag ${DOCKERHUB_REGISTRY}/docker-helloworld:latest ${ECR_REGISTRY}/docker-helloworld:latest"
+          sh "docker push ${ECR_REGISTRY}/docker-helloworld:latest"
         }
       }
     }
