@@ -6,14 +6,31 @@ pipeline {
     ECR_REGISTRY = 'public.ecr.aws/j7c0z4k6'
     ECR_REPOSITORY = 'docker-helloworld'
     AWS_REGION = 'us-east-1'
+    registryCredential = 'dockerhub'
   }
+
+  stages {
+    stage('Cloning Git') {
+        steps {
+            checkout([$class: 'GitSCM', 
+                      branches: [[name: '*/master']], 
+                      doGenerateSubmoduleConfigurations: false, 
+                      extensions: [], 
+                      submoduleCfg: [], 
+                      userRemoteConfigs: [[credentialsId: '', 
+                                           url: 'https://github.com/Osomudeya/jenkins-ecr-eks.git']]
+                     ])
+        }
+    }
+}
+
   
   stages {
     stage('Pull from Docker Hub') {
       steps {
         script {
           // Authenticate with Docker Hub
-          docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials') {
+          docker.withRegistry( '', registryCredential ) {
             // Pull the image from Docker Hub
             docker.image("${env.DOCKER_HUB_IMAGE}").pull()
           }
@@ -34,7 +51,7 @@ pipeline {
           docker.image("${env.DOCKER_HUB_IMAGE}").tag(ecrImage)
           
           // Push the Docker image to ECR
-          docker.withRegistry("${env.ECR_REGISTRY}", 'ecr-credentials') {
+          docker.withRegistry("${env.ECR_REGISTRY}", 'public.ecr.aws/j7c0z4k6') {
             docker.image(ecrImage).push()
           }
         }
