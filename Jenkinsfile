@@ -16,7 +16,7 @@ pipeline {
         stage('Pull from Docker Hub') {
             steps {
                 // Pull the Docker image from Docker Hub
-                sh "docker pull ${DOCKER_HUB_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_HUB_TAG}"
+                sh "sudo docker pull ${DOCKER_HUB_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_HUB_TAG}"
             }
         }
         
