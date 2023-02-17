@@ -16,7 +16,7 @@ pipeline {
           sh '''
             aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/j7c0z4k6
             docker build -t docker-helloworld .
-            docker tag docker-helloworld:latest public.ecr.aws/j7c0z4k6/docker-helloworld:latest:"${BUILD_ID}"
+            docker tag docker-helloworld:latest public.ecr.aws/j7c0z4k6/docker-helloworld"${BUILD_ID}"
             docker push public.ecr.aws/j7c0z4k6/docker-helloworld:latest:"${BUILD_ID}"
           '''
         }
