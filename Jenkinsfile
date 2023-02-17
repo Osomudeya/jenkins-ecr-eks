@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKERHUB_REGISTRY = "osomudeya"
+    DOCKERHUB_REGISTRY = "testcontainers"
     DOCKERHUB_USERNAME = 'credentials("dockerhub-credentials").username'
     DOCKERHUB_PASSWORD = 'credentials("dockerhub-credentials").password'
     AWS_ACCESS_KEY_ID = 'credentials("aws-credentials").accessKeyId'
@@ -15,13 +15,13 @@ pipeline {
     stage('Pull Docker image') {
       steps {
         sh "docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD} ${DOCKERHUB_REGISTRY}"
-        sh "docker pull ${DOCKERHUB_REGISTRY}/docker-helloworld:latest"
+        sh "docker pull ${DOCKERHUB_REGISTRY}/helloworld:latest"
       }
     }
 
     stage('Push to ECR') {
       steps {
-        withEnv([string(credentialsId: 'aws-credentials', variable: 'AWS_ACCESS_KEY_ID'),
+        withCredentials([string(credentialsId: 'aws-credentials', variable: 'AWS_ACCESS_KEY_ID'),
                           string(credentialsId: 'aws-credentials', variable: 'AWS_SECRET_ACCESS_KEY')]) {
           sh "aws ecr-public get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
           sh "docker tag ${DOCKERHUB_REGISTRY}/docker-helloworld:latest ${ECR_REGISTRY}/docker-helloworld:latest"
