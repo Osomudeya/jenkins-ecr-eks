@@ -14,8 +14,8 @@ pipeline {
   stages {
     stage('Pull Docker image') {
       steps {
-        sh "sudo docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD} ${DOCKERHUB_REGISTRY}"
-        sh "sudo docker pull ${DOCKERHUB_REGISTRY}/docker-helloworld:latest"
+        sh "docker login --username ${DOCKERHUB_USERNAME} --password ${DOCKERHUB_PASSWORD} ${DOCKERHUB_REGISTRY}"
+        sh "docker pull ${DOCKERHUB_REGISTRY}/docker-helloworld:latest"
       }
     }
 
