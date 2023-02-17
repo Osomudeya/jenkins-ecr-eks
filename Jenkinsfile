@@ -2,36 +2,35 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_HUB_IMAGE = "osomudeya/docker-helloworld"
-        ECR_REGISTRY = "public.ecr.aws/j7c0z4k6"
-        ECR_REPOSITORY = "public.ecr.aws/j7c0z4k6"
-        ECR_IMAGE_TAG = "latest"
+        // Define environment variables 
+        DOCKER_IMAGE_NAME = 'osomudeya/docker-helloworld'
+        DOCKER_HUB_REPO = 'osomudeya'
+        DOCKER_HUB_TAG = 'latest'
+        AWS_REGION = 'us-east-1'
+        AWS_ECR_REPO = 'docker-helloworld'
+        AWS_ACCOUNT_ID = sh(returnStdout: true, script: 'aws sts get-caller-identity --query Account --output text').trim()
+    //   AWS_ACCOUNT_ID = "public.ecr.aws/j7c0z4k6"
     }
-
+    
     stages {
-        stage("Pull image from Docker Hub") {
+        stage('Pull from Docker Hub') {
             steps {
-                sh "docker pull ${DOCKER_HUB_IMAGE}"
+                // Pull the Docker image from Docker Hub
+                sh "docker pull ${DOCKER_HUB_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_HUB_TAG}"
             }
         }
-
-        stage("Tag image with ECR repository information") {
+        
+        stage('Tag and Push to ECR') {
             steps {
-                sh "docker tag ${DOCKER_HUB_IMAGE} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${ECR_IMAGE_TAG}"
+                // Tag the Docker image with the ECR repository URL
+                sh "docker tag ${DOCKER_HUB_REPO}/${DOCKER_IMAGE_NAME}:${DOCKER_HUB_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AWS_ECR_REPO}:${DOCKER_HUB_TAG}"
+                
+                // Login to the Amazon ECR repository
+                sh "aws ecr get-login-password | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+                
+                // Push the Docker image to the Amazon ECR repository
+                sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${AWS_ECR_REPO}:${DOCKER_HUB_TAG}"
             }
-        }
-
-        stage('Push Image to ECR Repo') {
-            steps {
-                sh 'aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin "$ECR_REGISTRY"'
-                sh 'docker push "$ECR_REGISTRY/$APP_REPO_NAME:latest"'
-            }
-        }
-    }
-    post {
-        always {
-            echo 'Deleting all local images'
-            sh 'docker image prune -af'
         }
     }
 }
