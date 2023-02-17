@@ -1,7 +1,7 @@
 pipeline {
   agent any
   environment {
-    AWS_ACCOUNT_ID="public.ecr.aws/j7c0z4k6"
+    AWS_ACCOUNT_ID="141938542403"
     AWS_DEFAULT_REGION="us-east-1"
     IMAGE_REPO_NAME="docker-helloworld"
     IMAGE_TAG="latest"
