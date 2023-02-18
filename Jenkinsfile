@@ -8,14 +8,14 @@ pipeline {
       }
     }
     
-    stage ('Publish to DockerHub') {
-     steps {
-       withDockerRegistry([credentialsId: "dockerhub-credentials", url: "https://index.docker.io/v1/"]) {
-        sh "docker push osomudeya/hello-my-name:latest:${env.GIT_COMMIT}"
-
-       }
-      }
-  }
+//    stage ('Publish to DockerHub') {
+//     steps {
+//       withDockerRegistry([credentialsId: "dockerhub-credentials", url: "https://index.docker.io/v1/"]) {
+//        sh "docker push osomudeya/hello-my-name:latest:${env.GIT_COMMIT}"
+//
+//       }
+//      }
+//  }
 
     stage ('Publish to ECR') {
       steps {
