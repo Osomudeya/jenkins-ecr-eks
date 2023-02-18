@@ -11,7 +11,8 @@ pipeline {
     stage ('Publish to DockerHub') {
      steps {
        withDockerRegistry([credentialsId: "dockerhub-credentials", url: "https://index.docker.io/v1/"]) {
-        sh 'docker push osomudeya/hello-my-name:"${env.GIT_COMMIT}"'
+        sh "docker push osomudeya/hello-my-name:${env.GIT_COMMIT}"
+
        }
       }
   }
