@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-helloworld
+  labels:
+    app: docker-helloworld
+spec:
+  selector:
+    matchLabels:
+      app: docker-helloworld
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: docker-helloworld
+    spec:
+      containers:
+      - name: docker-helloworld
+        image: public.ecr.aws/j7c0z4k6/docker-helloworld:27
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        imagePullPolicy: Always

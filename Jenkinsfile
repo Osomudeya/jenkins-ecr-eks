@@ -4,14 +4,14 @@ pipeline {
     stage ('Build') {
       steps {
         sh 'printenv'
-        sh 'docker build -t osomudeya/hello-my-name:$BUILD_NUMBER .'
+        sh "docker build -t osomudeya/hello-my-name:$BUILD_NUMBER ."
       }
     }
-    
+
     // Commenting out this stage for now
     // stage ('Publish to DockerHub') {
     //   steps {
-    //     withDockerRegistry([credentialsId: "dockerhub-credentials", url: "https://index.docker.io/v1/"]) {
+    //     withDockerRegistry([credentialsId: 'dockerhub-credentials', url: 'https://index.docker.io/v1/']) {
     //       sh "docker push osomudeya/hello-my-name:latest:${env.GIT_COMMIT}"
     //     }
     //   }
@@ -24,9 +24,13 @@ pipeline {
           sh 'docker build -t docker-helloworld:$BUILD_NUMBER .'
           sh 'docker tag docker-helloworld:latest public.ecr.aws/j7c0z4k6/docker-helloworld:$BUILD_NUMBER'
           sh 'docker push public.ecr.aws/j7c0z4k6/docker-helloworld:$BUILD_NUMBER'
-         }
-       }
+        }
+      }
+    }
+    stage('Deploy'){
+      steps {
+        sh 'kubectl apply -f deployment.yml'
+      }
     }
   }
 }
-
