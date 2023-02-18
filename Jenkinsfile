@@ -1,36 +1,42 @@
 pipeline {
-  agent any
-  stages {
-    stage ('Build') {
-      steps {
-        sh 'printenv'
-        sh "docker build -t osomudeya/hello-my-name:$BUILD_NUMBER ."
-      }
+    agent any
+    environment {
+        registry = "public.ecr.aws/j7c0z4k6/docker-helloworld"
     }
-
-    // Commenting out this stage for now
-    // stage ('Publish to DockerHub') {
-    //   steps {
-    //     withDockerRegistry([credentialsId: 'dockerhub-credentials', url: 'https://index.docker.io/v1/']) {
-    //       sh "docker push osomudeya/hello-my-name:latest:${env.GIT_COMMIT}"
-    //     }
-    //   }
-    // }
-
-    stage ('Publish to ECR') {
-      steps {
-        withEnv(["AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}", "AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}", "AWS_DEFAULT_REGION=${env.AWS_DEFAULT_REGION}"]) {
-          sh 'docker login -u AWS -p $(aws ecr-public get-login-password --region us-east-1) public.ecr.aws/j7c0z4k6'
-          sh 'docker build -t docker-helloworld:$BUILD_NUMBER .'
-          sh 'docker tag docker-helloworld:latest public.ecr.aws/j7c0z4k6/docker-helloworld:$BUILD_NUMBER'
-          sh 'docker push public.ecr.aws/j7c0z4k6/docker-helloworld:$BUILD_NUMBER'
+   
+    stages {
+        stage('Cloning Git') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '', url: 'https://github.com/akannan1087/springboot-app']]])     
+            }
+        }
+    // Building Docker images
+    stage('Building image') {
+      steps{
+        script {
+          dockerImage = docker.build registry 
         }
       }
     }
-    stage('Deploy'){
-      steps {
-        sh 'kubectl apply -f deployment.yml'
+   
+    // Uploading Docker images into AWS ECR
+    stage('Pushing to ECR') {
+     steps{  
+         script {
+                sh 'aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/j7c0z4k6'
+                sh 'docker push public.ecr.aws/j7c0z4k6/docker-helloworld:latest'
+         }
+        }
       }
+
+       stage('K8S Deploy') {
+        steps{   
+            script {
+                withKubeConfig([credentialsId: 'K8S', serverUrl: '']) {
+                sh ('kubectl apply -f  eks-deploy-k8s.yaml')
+                }
+            }
+        }
+       }
     }
-  }
 }
