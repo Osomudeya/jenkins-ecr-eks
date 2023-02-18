@@ -4,14 +4,14 @@ pipeline {
     stage ('Build') {
       steps {
         sh 'printenv'
-        sh 'docker build -t docker-helloworld .'
+        sh 'docker build -t osomudeya/hello-my-name:latest .'
       }
     }
     
     stage ('Publish to DockerHub') {
      steps {
        withDockerRegistry([credentialsId: "dockerhub-credentials", url: "https://index.docker.io/v1/"]) {
-        sh "docker push osomudeya/docker-helloworld:${env.GIT_COMMIT}"
+        sh "docker push osomudeya/hello-my-name:latest:${env.GIT_COMMIT}"
 
        }
       }
