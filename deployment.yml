@@ -1,16 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: docker-helloworld
   labels:
     app: docker-helloworld
+  name: docker-helloworld
 spec:
+  replicas: 3
   selector:
     matchLabels:
       app: docker-helloworld
-  replicas: 3
-  strategy:
-    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -18,8 +16,27 @@ spec:
     spec:
       containers:
       - name: docker-helloworld
-        image: public.ecr.aws/j7c0z4k6/docker-helloworld:27
-        ports:
-        - containerPort: 80
-          protocol: TCP
+        image: public.ecr.aws/j7c0z4k6/docker-helloworld
         imagePullPolicy: Always
+        ports:
+        - containerPort: 8085
+          name: http
+          protocol: TCP
+# service type loadbalancer       
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: docker-helloworld
+    k8s-app: docker-helloworld
+  name: docker-helloworld
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 8085
+  type: LoadBalancer
+  selector:
+    app: docker-helloworld
