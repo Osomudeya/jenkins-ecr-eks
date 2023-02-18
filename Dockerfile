@@ -1,4 +1,4 @@
-FROM centos:lates
+FROM centos:latest
 RUN sudo yum update
 RUN sudo yum install -y httpd
 COPY ./index.html /var/www/html/index.html
